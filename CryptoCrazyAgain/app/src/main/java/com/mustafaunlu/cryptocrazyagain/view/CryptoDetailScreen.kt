@@ -1,0 +1,103 @@
+package com.mustafaunlu.cryptocrazyagain.view
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
+import com.mustafaunlu.cryptocrazyagain.model.Crypto
+import com.mustafaunlu.cryptocrazyagain.util.Resource
+import com.mustafaunlu.cryptocrazyagain.viewmodel.CryptoDetailViewModel
+import com.mustafaunlu.cryptocrazyagain.R
+
+
+@ExperimentalCoilApi
+@Composable
+fun CryptoDetailScreen(
+    id : String,
+    price : String,
+    navController : NavController,
+    viewModel: CryptoDetailViewModel = hiltViewModel()
+){
+
+
+    var cryptoItem = produceState<Resource<Crypto>>(initialValue = Resource.Loading()){
+        value=viewModel.getCrypto(id)
+    }.value
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colors.primaryVariant), contentAlignment = Alignment.Center) {
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            when(cryptoItem){
+
+
+                is Resource.Success -> {
+                    val selectedCrypto=cryptoItem.data!![0]
+
+                    Text(text = selectedCrypto.name,
+                        style = MaterialTheme.typography.h3,
+                        modifier = Modifier.padding(2.dp),
+                        fontWeight = FontWeight.Bold,
+                        color=MaterialTheme.colors.primary,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Image(painter = rememberImagePainter(data =R.drawable.ic_btc ),
+                        contentDescription =selectedCrypto.name, modifier =
+                        Modifier
+                            .padding(16.dp)
+                            .size(300.dp, 300.dp)
+                            .clip(CircleShape)
+                            .border(
+                                2.dp,
+                                Color.Gray, CircleShape
+                            ))
+
+                    // { , } işaretlerini kaldırmak için yapıldı
+                    val sonuc =price.subSequence(1,price.length-1)
+
+                    Text(text = sonuc.toString(),
+                        style = MaterialTheme.typography.h4,
+                        modifier = Modifier.padding(2.dp),
+                        fontWeight = FontWeight.Bold,
+                        color=MaterialTheme.colors.secondary,
+                        textAlign = TextAlign.Center
+
+                    )
+
+                }
+
+                is Resource.Error -> {
+                    Text(text = cryptoItem.message!!)
+
+                }
+                is Resource.Loading -> {
+                    CircularProgressIndicator(color = MaterialTheme.colors.primary)
+                }
+            }
+
+        }
+
+
+
+    }
+
+
+}
